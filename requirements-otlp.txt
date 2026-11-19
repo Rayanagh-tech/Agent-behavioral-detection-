@@ -1,0 +1,3 @@
+# Optionnel : export OTLP/HTTP vers n'importe quel collecteur (OTEL_EXPORTER_OTLP_ENDPOINT)
+-r requirements.txt
+opentelemetry-exporter-otlp-proto-http==1.45.0

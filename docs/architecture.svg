@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520" font-family="Helvetica,Arial,sans-serif" font-size="13">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#355"/></marker>
+  </defs>
+  <rect width="900" height="520" fill="#fff"/>
+  <text x="450" y="26" text-anchor="middle" font-size="17" font-weight="bold">SecRes Network Threat Detection V1 - architecture</text>
+
+  <rect x="20" y="60" width="190" height="400" rx="10" fill="#eef4fb" stroke="#4a78a8"/>
+  <text x="115" y="82" text-anchor="middle" font-weight="bold">Agents (agent.py)</text>
+  <rect x="35" y="95" width="160" height="60" rx="6" fill="#fff" stroke="#4a78a8"/>
+  <text x="115" y="118" text-anchor="middle">agent.run / agent.init</text><text x="115" y="138" text-anchor="middle" font-size="11">session + jeton signé</text>
+  <rect x="35" y="170" width="160" height="70" rx="6" fill="#fff" stroke="#4a78a8"/>
+  <text x="115" y="193" text-anchor="middle">agent.operation</text><text x="115" y="213" text-anchor="middle" font-size="11">tool.call / resource.access</text><text x="115" y="228" text-anchor="middle" font-size="11">(spans enfants)</text>
+  <rect x="35" y="260" width="160" height="60" rx="6" fill="#fff" stroke="#4a78a8"/>
+  <text x="115" y="283" text-anchor="middle">événement JSON</text><text x="115" y="303" text-anchor="middle" font-size="11">event_id, parent_event_id…</text>
+  <text x="115" y="360" text-anchor="middle" font-size="11" fill="#555">Le rôle déclaré n'est</text><text x="115" y="376" text-anchor="middle" font-size="11" fill="#555">jamais cru : il est</text><text x="115" y="392" text-anchor="middle" font-size="11" fill="#555">comparé au registre.</text>
+
+  <rect x="260" y="60" width="400" height="400" rx="10" fill="#f6f6f6" stroke="#666"/>
+  <text x="460" y="82" text-anchor="middle" font-weight="bold">Serveur (server.py + secres/app.py)</text>
+  <rect x="280" y="95" width="360" height="60" rx="6" fill="#fff4e0" stroke="#c08a2b"/>
+  <text x="460" y="116" text-anchor="middle" font-weight="bold">1. Identité (identity.py)</text><text x="460" y="136" text-anchor="middle" font-size="11">AgentRegistry (config/agents.json) · SessionManager HMAC · IdentityService</text>
+  <rect x="280" y="170" width="360" height="45" rx="6" fill="#fff" stroke="#666"/>
+  <text x="460" y="190" text-anchor="middle">StandardEvent (events.py)</text><text x="460" y="206" text-anchor="middle" font-size="11">agent_id, agent_role, session_id, trace_id, event_id…</text>
+  <rect x="280" y="230" width="360" height="150" rx="6" fill="#fde9e7" stroke="#b3261e"/>
+  <text x="460" y="250" text-anchor="middle" font-weight="bold">3. Moteur de détection comportementale (secres/detection/)</text>
+  <rect x="295" y="262" width="330" height="30" rx="4" fill="#fff" stroke="#b3261e"/><text x="460" y="282" text-anchor="middle" font-size="12">Niveau 1 : règles (ACL rôle vérifié, approbation, seuils V0)</text>
+  <rect x="295" y="298" width="330" height="30" rx="4" fill="#fff" stroke="#b3261e"/><text x="460" y="318" text-anchor="middle" font-size="12">Niveau 2 : fenêtres de temps (config/detection.json)</text>
+  <rect x="295" y="334" width="330" height="30" rx="4" fill="#fff" stroke="#b3261e"/><text x="460" y="354" text-anchor="middle" font-size="12">Niveau 3 : baselines par agent (moyenne, écart-type)</text>
+  <rect x="280" y="395" width="170" height="50" rx="6" fill="#fff" stroke="#666"/><text x="365" y="416" text-anchor="middle">Findings structurés</text><text x="365" y="434" text-anchor="middle" font-size="11">GET /findings</text>
+  <rect x="470" y="395" width="170" height="50" rx="6" fill="#fff" stroke="#666"/><text x="555" y="416" text-anchor="middle">Journaux JSONL</text><text x="555" y="434" text-anchor="middle" font-size="11">evenements · findings</text>
+
+  <rect x="710" y="60" width="170" height="400" rx="10" fill="#eaf6ee" stroke="#2f7d4f"/>
+  <text x="795" y="82" text-anchor="middle" font-weight="bold">2. OpenTelemetry</text>
+  <text x="795" y="100" text-anchor="middle" font-size="11">(secres/telemetry.py)</text>
+  <rect x="725" y="115" width="140" height="70" rx="6" fill="#fff" stroke="#2f7d4f"/><text x="795" y="138" text-anchor="middle">Traces</text><text x="795" y="156" text-anchor="middle" font-size="11">W3C traceparent</text><text x="795" y="172" text-anchor="middle" font-size="11">spans parent/enfant</text>
+  <rect x="725" y="200" width="140" height="60" rx="6" fill="#fff" stroke="#2f7d4f"/><text x="795" y="223" text-anchor="middle">Événements</text><text x="795" y="243" text-anchor="middle" font-size="11">span events structurés</text>
+  <rect x="725" y="275" width="140" height="70" rx="6" fill="#fff" stroke="#2f7d4f"/><text x="795" y="298" text-anchor="middle">Métriques</text><text x="795" y="316" text-anchor="middle" font-size="11">faible cardinalité</text><text x="795" y="332" text-anchor="middle" font-size="11">GET /metrics</text>
+  <rect x="725" y="360" width="140" height="80" rx="6" fill="#fff" stroke="#2f7d4f"/><text x="795" y="380" text-anchor="middle">Sorties</text><text x="795" y="398" text-anchor="middle" font-size="11">GET /traces</text><text x="795" y="414" text-anchor="middle" font-size="11">logs/spans/*.jsonl</text><text x="795" y="430" text-anchor="middle" font-size="11">OTLP (optionnel)</text>
+
+  <path d="M210 290 H280" stroke="#355" stroke-width="1.6" marker-end="url(#a)" fill="none"/>
+  <text x="245" y="282" text-anchor="middle" font-size="10">POST /event</text>
+  <path d="M460 155 V170 M460 215 V230" stroke="#355" stroke-width="1.6" marker-end="url(#a)" fill="none"/>
+  <path d="M460 380 V395" stroke="#355" stroke-width="1.6" marker-end="url(#a)" fill="none"/>
+  <path d="M640 190 H710" stroke="#2f7d4f" stroke-width="1.6" stroke-dasharray="5 3" marker-end="url(#a)" fill="none"/>
+  <path d="M640 305 H710" stroke="#2f7d4f" stroke-width="1.6" stroke-dasharray="5 3" marker-end="url(#a)" fill="none"/>
+  <path d="M195 125 H260" stroke="#2f7d4f" stroke-width="1.6" stroke-dasharray="5 3" marker-end="url(#a)" fill="none"/>
+  <text x="228" y="118" text-anchor="middle" font-size="10">POST /session</text>
+  <text x="450" y="490" text-anchor="middle" font-size="11" fill="#555">Trait plein : flux d'événements. Pointillés : télémétrie (instrumentation séparée de la logique de détection).</text>
+  <text x="450" y="508" text-anchor="middle" font-size="11" fill="#555">Les findings portent agent_id, session_id et trace_id : corrélation identité - trace - détection.</text>
+</svg>

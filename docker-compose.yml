@@ -1,0 +1,155 @@
+# V1 : même topologie que la V0 (réseau 172.28.0.0/24), avec identité authentifiée et télémétrie.
+# Les secrets ci-dessous sont des valeurs de démonstration synthétiques (jamais de vrais identifiants).
+x-agent: &agent
+  build: .
+  depends_on:
+    server:
+      condition: service_healthy
+  volumes:
+    - ./logs:/app/logs
+
+services:
+  server:
+    build: .
+    command: ["python", "server.py"]
+    ports:
+      - "8000:8000"
+    environment:
+      SECRES_SIGNING_KEY: cle-de-signature-de-demonstration
+      SECRES_LOG_DIR: /app/logs
+      # OTEL_EXPORTER_OTLP_ENDPOINT: http://host.docker.internal:4318   # optionnel (voir README)
+    volumes:
+      - ./logs:/app/logs
+      - ./config:/app/config:ro
+    networks:
+      lab:
+        ipv4_address: 172.28.0.3
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  bon-agent:
+    <<: *agent
+    command: ["python", "agent.py", "bon"]
+    environment:
+      SERVER_URL: http://server:8000
+      AGENT_ID: bon-agent
+      AGENT_SECRET: demo-secret-bon-agent
+      SCENARIO: bon
+      SECRES_SPAN_DIR: /app/logs/spans
+    networks:
+      lab:
+        ipv4_address: 172.28.0.4
+
+  non-authorise-agent:
+    <<: *agent
+    command: ["python", "agent.py", "acces_non_autorise"]
+    environment:
+      SERVER_URL: http://server:8000
+      AGENT_ID: non-authorise-agent
+      AGENT_SECRET: demo-secret-non-authorise-agent
+      SCENARIO: acces_non_autorise
+      SECRES_SPAN_DIR: /app/logs/spans
+    networks:
+      lab:
+        ipv4_address: 172.28.0.5
+
+  exfiltration-agent:
+    <<: *agent
+    command: ["python", "agent.py", "exfiltration"]
+    environment:
+      SERVER_URL: http://server:8000
+      AGENT_ID: exfiltration-agent
+      AGENT_SECRET: demo-secret-exfiltration-agent
+      SCENARIO: exfiltration
+      SECRES_SPAN_DIR: /app/logs/spans
+    networks:
+      lab:
+        ipv4_address: 172.28.0.6
+
+  abus-outils-agent:
+    <<: *agent
+    command: ["python", "agent.py", "abus_outils"]
+    environment:
+      SERVER_URL: http://server:8000
+      AGENT_ID: abus-outils-agent
+      AGENT_SECRET: demo-secret-abus-outils-agent
+      SCENARIO: abus_outils
+      SECRES_SPAN_DIR: /app/logs/spans
+    networks:
+      lab:
+        ipv4_address: 172.28.0.7
+
+  contournement-validation-agent:
+    <<: *agent
+    command: ["python", "agent.py", "contournement_validation"]
+    environment:
+      SERVER_URL: http://server:8000
+      AGENT_ID: contournement-validation-agent
+      AGENT_SECRET: demo-secret-contournement-validation-agent
+      SCENARIO: contournement_validation
+      SECRES_SPAN_DIR: /app/logs/spans
+    networks:
+      lab:
+        ipv4_address: 172.28.0.8
+
+  exfiltration-graduelle-agent:
+    <<: *agent
+    command: ["python", "agent.py", "exfiltration_graduelle"]
+    environment:
+      SERVER_URL: http://server:8000
+      AGENT_ID: exfiltration-graduelle-agent
+      AGENT_SECRET: demo-secret-exfiltration-graduelle-agent
+      SCENARIO: exfiltration_graduelle
+      SECRES_SPAN_DIR: /app/logs/spans
+    networks:
+      lab:
+        ipv4_address: 172.28.0.9
+
+  sequence-suspecte-agent:
+    <<: *agent
+    command: ["python", "agent.py", "sequence_suspecte"]
+    environment:
+      SERVER_URL: http://server:8000
+      AGENT_ID: sequence-suspecte-agent
+      AGENT_SECRET: demo-secret-sequence-suspecte-agent
+      SCENARIO: sequence_suspecte
+      SECRES_SPAN_DIR: /app/logs/spans
+    networks:
+      lab:
+        ipv4_address: 172.28.0.10
+
+  usurpation-role-agent:
+    <<: *agent
+    command: ["python", "agent.py", "usurpation_role"]
+    environment:
+      SERVER_URL: http://server:8000
+      AGENT_ID: usurpation-role-agent
+      AGENT_SECRET: demo-secret-usurpation-role-agent
+      SCENARIO: usurpation_role
+      SECRES_SPAN_DIR: /app/logs/spans
+    networks:
+      lab:
+        ipv4_address: 172.28.0.11
+
+  baseline-deviation-agent:
+    <<: *agent
+    command: ["python", "agent.py", "deviation_baseline"]
+    environment:
+      SERVER_URL: http://server:8000
+      AGENT_ID: baseline-deviation-agent
+      AGENT_SECRET: demo-secret-baseline-deviation-agent
+      SCENARIO: deviation_baseline
+      SECRES_SPAN_DIR: /app/logs/spans
+    networks:
+      lab:
+        ipv4_address: 172.28.0.12
+
+networks:
+  lab:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/24

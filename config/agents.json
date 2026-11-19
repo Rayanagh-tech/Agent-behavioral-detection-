@@ -1,0 +1,50 @@
+{
+  "_comment": "Registre d'agents de confiance (laboratoire). Les secrets de démonstration sont synthétiques : 'demo-secret-<agent_id>'. Seuls leurs hachés SHA-256 sont stockés ici.",
+  "agents": {
+    "bon-agent": {
+      "role": "credit",
+      "display_name": "Credit Agent",
+      "credential_sha256": "893505a7e4360c7dfe5a58aa22dddc2d2d2ab1b58593570614c648f15e19d2ff"
+    },
+    "non-authorise-agent": {
+      "role": "credit",
+      "display_name": "Credit Agent",
+      "credential_sha256": "e0b797c75d53d5b5c68328725db528c6b40e42d3481086866b8f28c378dce351"
+    },
+    "exfiltration-agent": {
+      "role": "assistance",
+      "display_name": "Support Agent",
+      "credential_sha256": "24eb29ab12609ca2b302706df2ae6949d3e687403c997a392a7d0e0f91808d28"
+    },
+    "abus-outils-agent": {
+      "role": "facturation",
+      "display_name": "Payment Agent",
+      "credential_sha256": "ef24284e086fe774881d7536869087494748b8a31a419a95bcaef91e80800a0a"
+    },
+    "contournement-validation-agent": {
+      "role": "facturation",
+      "display_name": "Payment Agent",
+      "credential_sha256": "fb78ed2c9fe1e0a0163fb13745f9800e4dcd251f834cc30a3653b885e9c05080"
+    },
+    "exfiltration-graduelle-agent": {
+      "role": "assistance",
+      "display_name": "Support Agent",
+      "credential_sha256": "a53e7217c12bccb25dfeed63e3865c85026a0e78370802580b358b6cab04f7f5"
+    },
+    "sequence-suspecte-agent": {
+      "role": "assistance",
+      "display_name": "Support Agent",
+      "credential_sha256": "9bcd862186cc9e339527dad18608b4ee1955cfb9a4faa465cdf0cc70e9c55c29"
+    },
+    "usurpation-role-agent": {
+      "role": "credit",
+      "display_name": "Credit Agent",
+      "credential_sha256": "f9130fd339ca01af4aa2570a770aa6fa0888ee9ab055b8c9b477d3b21a0b9a4d"
+    },
+    "baseline-deviation-agent": {
+      "role": "credit",
+      "display_name": "Credit Agent",
+      "credential_sha256": "792614b08276d0fd7870f9ca8f6844ed89cff36690330a182af57f3f8b6d2aea"
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "_comment": "ACL reprise de la V0 (CONTROLES_ACCES). Le rôle utilisé est celui du registre de confiance, jamais celui déclaré par l'agent. '*' = tout identifiant de ce type.",
+  "resources": {
+    "jeu_donnees": {"credit": ["credit"], "rh": ["rh"], "clients": ["assistance"]},
+    "compte_credit": {"*": ["credit"]},
+    "outil": {"api_paiement": ["facturation"]},
+    "paiement": {"*": ["facturation"]},
+    "document": {"*": ["assistance"]}
+  }
+}

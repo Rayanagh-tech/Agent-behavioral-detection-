@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Simulateur du laboratoire de sécurité</title>
+<style>
+:root{--bg:#eef2f5;--panel:#fff;--ink:#14212b;--mute:#5d6e7b;--line:#d3dce3;--ok:#0f7a55;--okbg:#dff3ea;--ko:#b3261e;--kobg:#fbe3e1;--acc:#1d4f7a;--code:#f4f7f9;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e161d;--panel:#16212b;--ink:#e6edf2;--mute:#8da0ae;--line:#26353f;--ok:#4cc79a;--okbg:#12362b;--ko:#ff8a80;--kobg:#3b1b19;--acc:#7db6e8;--code:#0f1920;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e161d;--panel:#16212b;--ink:#e6edf2;--mute:#8da0ae;--line:#26353f;--ok:#4cc79a;--okbg:#12362b;--ko:#ff8a80;--kobg:#3b1b19;--acc:#7db6e8;--code:#0f1920;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:1000px;margin:0 auto;padding:24px 16px 48px}
+h1{font-size:26px;margin:0 0 4px;letter-spacing:-.01em}
+.sub{color:var(--mute);margin:0 0 20px;max-width:62ch}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px}
+.ctrl{display:grid;grid-template-columns:2fr 1fr auto auto;gap:12px;align-items:end}
+label{display:block;font-size:13px;color:var(--mute);margin-bottom:4px}
+select,input{width:100%;height:40px;padding:0 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:inherit}
+button{height:40px;padding:0 18px;border-radius:6px;border:1px solid var(--acc);background:var(--acc);color:var(--panel);font:inherit;font-weight:600;cursor:pointer}
+button.ghost{background:transparent;color:var(--acc)}
+button:disabled{opacity:.5;cursor:default}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+#desc{margin:12px 0 0;color:var(--mute);font-size:14px}
+.stage{margin:16px 0;display:grid;grid-template-columns:1fr 2fr 1fr;align-items:center;gap:8px;padding:24px 16px}
+.node{border:1px solid var(--line);border-radius:8px;padding:12px;text-align:center;background:var(--bg)}
+.node b{display:block}.node span{font-size:12px;color:var(--mute)}
+.wire{position:relative;height:2px;background:var(--line);margin:0 6px}
+.pkt{position:absolute;top:-6px;left:0;width:14px;height:14px;border-radius:50%;background:var(--acc);opacity:0}
+.verdict{position:absolute;left:50%;top:14px;transform:translateX(-50%);font-size:13px;font-weight:600;padding:2px 10px;border-radius:99px;opacity:0;transition:opacity .2s;white-space:nowrap}
+.stats{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.stat{flex:1;min-width:110px;padding:10px 14px;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
+.stat b{font-size:24px;display:block;line-height:1.1}.stat span{font-size:13px;color:var(--mute)}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:880px}
+th{text-align:left;font-weight:600;color:var(--mute);font-size:13px;padding:8px;border-bottom:1px solid var(--line)}
+td{padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
+tr.row{cursor:pointer}tr.row:hover td{background:var(--code)}
+.tag{display:inline-block;padding:1px 9px;border-radius:99px;font-size:13px;font-weight:600}
+.tag.ok{background:var(--okbg);color:var(--ok)}.tag.ko{background:var(--kobg);color:var(--ko)}
+.f{display:inline-block;margin:0 4px 2px 0;padding:0 7px;border:1px solid var(--line);border-radius:4px;font:12px ui-monospace,Menlo,Consolas,monospace}
+pre{margin:0;padding:10px;background:var(--code);border-radius:6px;font:12px/1.45 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;word-break:break-word}
+.empty{padding:28px;text-align:center;color:var(--mute)}
+@media (max-width:640px){.ctrl{grid-template-columns:1fr 1fr}.ctrl>div:first-child{grid-column:1/-1}.stage{grid-template-columns:1fr}.wire{height:40px;width:2px;margin:0 auto}.pkt{display:none}}
+@media (prefers-reduced-motion:reduce){.pkt{display:none}}
+</style>
+</head>
+<body>
+<main>
+<h1>Simulateur du laboratoire de sécurité</h1>
+<p class="sub">Choisissez un scénario et le nombre d’agents qui l’exécutent. Chaque agent envoie ses événements au serveur, qui applique les mêmes règles que <code>server.py</code> et répond par une décision.</p>
+
+<section class="card">
+  <div class="ctrl">
+    <div><label for="sc">Scénario</label><select id="sc"></select></div>
+    <div><label for="n">Nombre de simulations</label><input id="n" type="number" min="1" max="50" value="3"></div>
+    <button id="run">Lancer</button>
+    <button id="clr" class="ghost">Effacer</button>
+  </div>
+  <p id="desc"></p>
+</section>
+
+<section class="card stage" aria-live="polite">
+  <div class="node"><b id="ag">Agent</b><span id="agip">—</span></div>
+  <div class="wire"><div class="pkt" id="pkt"></div><div class="verdict" id="vd"></div><div id="cap" style="position:absolute;left:0;right:0;top:-28px;text-align:center;font:12px ui-monospace,Menlo,Consolas,monospace;color:var(--mute);white-space:nowrap"></div></div>
+  <div class="node"><b>Server</b><span>172.28.0.3:8000</span></div>
+</section>
+
+<div class="stats">
+  <div class="stat"><b id="s-t">0</b><span>événements envoyés</span></div>
+  <div class="stat"><b id="s-a" style="color:var(--ok)">0</b><span>autorisés</span></div>
+  <div class="stat"><b id="s-r" style="color:var(--ko)">0</b><span>refusés</span></div>
+  <button id="dl" class="ghost" disabled>Télécharger les logs</button><button id="rst" class="ghost">Réinitialiser les logs</button><span id="dls" style="font-size:13px;color:var(--mute);align-self:center;max-width:36ch"></span>
+</div>
+
+<textarea id="raw" readonly hidden rows="6" style="width:100%;margin-bottom:12px;font:12px ui-monospace,Menlo,Consolas,monospace;background:var(--code);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:8px"></textarea>
+<section class="card tbl">
+  <table>
+    <thead><tr><th>#</th><th>Agent</th><th>Événement</th><th>Paquet</th><th>Décision</th><th>Constats</th></tr></thead>
+    <tbody id="log"></tbody>
+  </table>
+  <div class="empty" id="empty">Aucun événement pour l’instant. Choisissez un scénario puis cliquez sur Lancer.</div>
+</section>
+</main>
+
+<script>
+// Scenarios copied from agent.py. ips follow docker-compose.yml.
+const SCENARIOS={
+ bon:{label:"bon",ip:"172.28.0.4",desc:"Un agent crédit légitime lit son propre jeu de données, puis accorde un crédit avec approbation. Résultat attendu : tout est autorisé.",events:[
+  {type_evenement:"acces_donnees",action:"lecture",ressource:{type:"jeu_donnees",id:"credit"},acteur:{role:"credit"},quantite:2},
+  {type_evenement:"operation",action:"accorder_credit",ressource:{type:"compte_credit",id:"demo-001"},acteur:{role:"credit"},approbation:{requise:true,approuvee:true}}]},
+ acces_non_autorise:{label:"acces_non_autorise",ip:"172.28.0.5",desc:"Un agent crédit lit le jeu de données RH. Résultat attendu : refusé (rôle non autorisé).",events:[
+  {type_evenement:"acces_donnees",action:"lecture",ressource:{type:"jeu_donnees",id:"rh"},acteur:{role:"credit"},quantite:1}]},
+ exfiltration:{label:"exfiltration",ip:"172.28.0.6",desc:"Un agent assistance lit 120 fiches clients et transfère 48 ko. Résultat attendu : refusé (signal d’exfiltration).",events:[
+  {type_evenement:"acces_donnees",action:"lecture",ressource:{type:"jeu_donnees",id:"clients"},acteur:{role:"assistance"},quantite:120,octets_transferes:48000}]},
+ abus_outils:{label:"abus_outils",ip:"172.28.0.7",desc:"Un agent facturation appelle l’API de paiement 9 fois. Résultat attendu : refusé (fréquence d’appels).",events:[
+  {type_evenement:"appel_outil",action:"appel",ressource:{type:"outil",id:"api_paiement"},acteur:{role:"facturation"},quantite:9}]},
+ contournement_validation:{label:"contournement_validation",ip:"172.28.0.8",desc:"Un agent facturation rembourse un paiement sans l’approbation requise. Résultat attendu : refusé.",events:[
+  {type_evenement:"operation",action:"rembourser",ressource:{type:"paiement",id:"demo-paiement-001"},acteur:{role:"facturation"},approbation:{requise:true,approuvee:false}}]}
+};
+// Port of server.py CONTROLES_ACCES / role_autorise / evaluate
+const ACL={jeu_donnees:{credit:["credit"],rh:["rh"],clients:["assistance"]},compte_credit:{"*":["credit"]},outil:{api_paiement:["facturation"]},paiement:{"*":["facturation"]},document:{"*":["assistance"]}};
+function roleAutorise(a,r){
+  if(!a||!r)return false;
+  const t=ACL[r.type]||{};
+  const ok=t[r.id]??t["*"]??[];
+  return typeof a.role==="string"&&ok.includes(a.role);
+}
+function evaluate(e){
+  const f=[],t=e.type_evenement,ap=e.approbation||{};
+  if(!roleAutorise(e.acteur||{},e.ressource||{}))f.push("acces_non_autorise");
+  if(t==="acces_donnees"&&((e.quantite||0)>=50||(e.octets_transferes||0)>=10000))f.push("exfiltration_possible");
+  if(t==="appel_outil"&&(e.quantite||0)>=5)f.push("abus_outils_seuil_frequence");
+  if(t==="operation"&&ap.requise===true&&ap.approuvee!==true)f.push("approbation_requise_absente_ou_contournee");
+  return{decision:f.length?"refuser":"autoriser",findings:f};
+}
+
+const $=id=>document.getElementById(id);
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const sc=$("sc");
+Object.keys(SCENARIOS).forEach(k=>sc.add(new Option(k,k)));
+const showDesc=()=>$("desc").textContent=SCENARIOS[sc.value].desc;
+sc.onchange=showDesc;showDesc();
+
+let total=0,nA=0,nR=0,rowNo=0,running=false;
+const logLines=[];
+let downloads=null;
+(window.claude&&claude.use?claude.use("downloads"):Promise.resolve(null)).then(d=>{downloads=d}).catch(()=>{});
+
+async function animate(agentName,ip,verdict,ev){
+  $("ag").textContent=agentName;$("agip").textContent=ip;
+  $("cap").textContent="POST /event · "+new TextEncoder().encode(JSON.stringify(ev)).length+" octets";
+  const vd=$("vd");vd.style.opacity=0;
+  const p=$("pkt"),w=p.parentElement.clientWidth-14;
+  if(!matchMedia("(prefers-reduced-motion:reduce)").matches&&p.animate){
+    p.style.background="var(--acc)";
+    await p.animate([{left:"0px",opacity:1},{left:w+"px",opacity:1}],{duration:380,easing:"ease-in"}).finished;
+    p.style.background=verdict.decision==="autoriser"?"var(--ok)":"var(--ko)";
+    await p.animate([{left:w+"px",opacity:1},{left:"0px",opacity:1}],{duration:380,easing:"ease-out"}).finished;
+    p.style.opacity=0;
+  }else await sleep(200);
+  const ok=verdict.decision==="autoriser";
+  vd.textContent=verdict.decision;vd.style.background=ok?"var(--okbg)":"var(--kobg)";vd.style.color=ok?"var(--ok)":"var(--ko)";vd.style.opacity=1;
+}
+
+function addRow(agent,ev,res,ip){
+  $("empty").style.display="none";
+  const ok=res.decision==="autoriser";
+  const payload=JSON.stringify(ev),size=new TextEncoder().encode(payload).length,port=32768+Math.floor(Math.random()*28000),rec={...ev,recu_le:new Date().toISOString(),ip_source:ip,port_source:port,decision:res.decision,findings:res.findings};
+  const tr=document.createElement("tr");tr.className="row";tr.title="Afficher l’événement complet";
+  const sum=`${ev.type_evenement} · ${ev.action} · ${ev.ressource.type}/${ev.ressource.id} · ${ev.acteur.role}`;
+  tr.innerHTML=`<td>${++rowNo}</td><td></td><td></td><td></td><td><span class="tag ${ok?"ok":"ko"}">${res.decision}</span></td><td></td>`;
+  tr.children[1].textContent=agent;tr.children[2].textContent=sum;
+  tr.children[3].textContent=`${ip}:${port} → 172.28.0.3:8000 · ${size} octets`;tr.children[3].style.cssText="font:12px ui-monospace,Menlo,Consolas,monospace;white-space:nowrap";
+  if(!res.findings.length)tr.children[5].textContent="—";
+  res.findings.forEach(x=>{const s=document.createElement("span");s.className="f";s.textContent=x;tr.children[5].appendChild(s)});
+  const det=document.createElement("tr");det.hidden=true;
+  const td=document.createElement("td");td.colSpan=6;
+  const pre=document.createElement("pre");pre.textContent="# Événement enregistré dans le log\n"+JSON.stringify(rec,null,2);
+  const pk=document.createElement("pre");pk.style.marginBottom="8px";pk.textContent=["# Paquet envoyé par l’agent","POST /event HTTP/1.1","Host: server:8000","Content-Type: application/json","Content-Length: "+size,"Source: "+ip+":"+port+" (TCP)","Destination: 172.28.0.3:8000","Corps: "+payload,"","# Réponse du serveur","HTTP/1.0 200 OK","Corps: "+JSON.stringify({decision:res.decision,findings:res.findings})].join("\n");td.appendChild(pk);td.appendChild(pre);det.appendChild(td);
+  tr.onclick=()=>det.hidden=!det.hidden;
+  const body=$("log");body.prepend(det);body.prepend(tr);
+  // Same record that server.py writes to logs/evenements.jsonl
+  logLines.push(rec);
+  $("dl").disabled=false;
+  total++;ok?nA++:nR++;
+  $("s-t").textContent=total;$("s-a").textContent=nA;$("s-r").textContent=nR;
+}
+
+$("run").onclick=async()=>{
+  if(running)return;
+  const key=sc.value,S=SCENARIOS[key];
+  const n=Math.max(1,Math.min(50,parseInt($("n").value)||1));
+  $("n").value=n;running=true;$("run").disabled=true;$("run").textContent="En cours…";
+  for(let i=1;i<=n;i++){
+    const agent=`${key.replace(/_/g,"-")}-agent #${i}`;
+    for(const base of S.events){
+      const ev={...base,horodatage_evenement:new Date().toISOString(),etiquette_scenario:key};
+      const res=evaluate({...ev});
+      await animate(agent,S.ip,res,ev);
+      addRow(agent,ev,res,S.ip);
+      await sleep(150);
+    }
+  }
+  running=false;$("run").disabled=false;$("run").textContent="Lancer";
+};
+$("dl").onclick=async()=>{
+  const text=logLines.map(r=>JSON.stringify(r)).join("\n")+"\n";
+  const st=$("dls");
+  if(!downloads){const t=$("raw");t.value=text;t.hidden=false;t.select();st.textContent="Téléchargement indisponible ici : copiez le contenu ci-dessous dans logs/evenements.jsonl.";return}
+  try{await downloads.save({filename:"evenements.jsonl.txt",data:text});st.textContent="Fichier enregistré. Renommez-le en evenements.jsonl."}
+  catch(e){st.textContent=e&&e.code==="declined"?"Téléchargement annulé.":"Échec du téléchargement ("+((e&&e.code)||"erreur")+")."}
+};
+$("clr").onclick=()=>{
+  if(running)return;
+  $("log").innerHTML="";$("empty").style.display="";
+  total=nA=nR=rowNo=0;logLines.length=0;$("dl").disabled=true;$("dls").textContent="";$("raw").hidden=true;["s-t","s-a","s-r"].forEach(i=>$(i).textContent=0);
+  $("vd").style.opacity=0;$("ag").textContent="Agent";$("agip").textContent="—";
+};
+$("rst").onclick=$("clr").onclick;
+$("dl").onclick=async()=>{
+  const text=logLines.map(r=>JSON.stringify(r)).join("\n")+"\n",st=$("dls");
+  try{
+    if(window.showSaveFilePicker){
+      const h=await showSaveFilePicker({suggestedName:"evenements.jsonl",types:[{description:"JSON Lines",accept:{"application/x-ndjson":[".jsonl"]}}]});
+      const w=await h.createWritable();await w.write(text);await w.close();
+      st.textContent="Enregistré : "+h.name;return;
+    }
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(new Blob([text],{type:"application/x-ndjson"}));
+    a.download="evenements.jsonl";document.body.appendChild(a);a.click();a.remove();
+    st.textContent="evenements.jsonl téléchargé dans votre dossier de téléchargements.";
+  }catch(e){st.textContent=e&&e.name==="AbortError"?"Enregistrement annulé.":"Échec : "+e}
+};
+
+</script>
+</body>
+</html>

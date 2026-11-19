@@ -1,0 +1,72 @@
+{
+  "_comment": "Seuils du moteur de détection comportementale. Aucune valeur n'est codée en dur dans le code. Durées en secondes.",
+  "severity_order": ["low", "medium", "high", "critical"],
+  "cooldown_seconds": 60,
+  "known_tools": ["api_paiement"],
+  "recommended_actions": {
+    "identity_unverified": "Rejeter l'agent, vérifier ses identifiants et révoquer la session.",
+    "identity_spoofing": "Isoler l'agent, révoquer la session et enquêter sur l'usurpation de rôle ou d'identité.",
+    "replayed_event": "Vérifier un éventuel rejeu d'événement et renouveler la session.",
+    "trace_mismatch": "Vérifier la propagation du contexte de trace entre les composants.",
+    "unauthorized_resource_access": "Bloquer l'accès, notifier l'équipe SOC et revoir les droits de l'agent.",
+    "unauthorized_tool_usage": "Bloquer l'outil pour cet agent et revoir ses autorisations.",
+    "invalid_operation": "Rejeter l'opération et contrôler la logique de l'agent.",
+    "approval_bypass": "Suspendre l'opération jusqu'à obtention de l'approbation requise.",
+    "suspicious_action": "Faire examiner l'action par un analyste.",
+    "data_exfiltration_suspected": "Suspendre la session de l'agent et examiner les données transférées.",
+    "tool_abuse_frequency": "Limiter le débit d'appels de l'outil et examiner l'agent.",
+    "repeated_sensitive_operations": "Exiger une approbation humaine pour les prochaines opérations sensibles.",
+    "excessive_data_reads": "Limiter le débit de lecture et examiner la session.",
+    "customer_record_volume": "Examiner l'accès aux fiches clients et restreindre temporairement l'agent.",
+    "repeated_payment_api_calls": "Suspendre les appels à l'API de paiement et vérifier les transactions.",
+    "abnormal_tool_frequency": "Examiner l'usage de l'outil et appliquer un quota.",
+    "suspicious_sequence": "Examiner la séquence d'opérations et suspendre l'agent si nécessaire.",
+    "gradual_exfiltration": "Suspendre la session, examiner le volume cumulé lu et durcir le quota de lecture.",
+    "baseline_deviation": "Comparer au comportement habituel de l'agent et valider auprès de son propriétaire.",
+    "default": "Examiner l'événement."
+  },
+  "level1": {
+    "valid_operations": {
+      "acces_donnees": ["lecture"],
+      "appel_outil": ["appel"],
+      "operation": ["accorder_credit", "rembourser", "exporter"]
+    },
+    "sensitive_actions": ["accorder_credit", "rembourser"],
+    "single_read_max_records": 50,
+    "single_read_max_bytes": 10000,
+    "tool_call_quantity_threshold": 5,
+    "repeated_sensitive": {"window_seconds": 60, "max_count": 3}
+  },
+  "time_window": {
+    "history_seconds": 600,
+    "excessive_reads": {"window_seconds": 60, "max_reads": 40, "severity": "medium"},
+    "customer_record_volume": {"window_seconds": 120, "resource": "jeu_donnees/clients", "max_records": 200, "min_requests": 2, "severity": "high"},
+    "payment_api_calls": {"window_seconds": 60, "tool": "api_paiement", "max_calls": 10, "severity": "high"},
+    "tool_frequency": {"window_seconds": 60, "max_calls_per_tool": 20, "severity": "medium"},
+    "gradual_exfiltration": {"window_seconds": 300, "resource": "jeu_donnees/clients", "max_records_per_request": 20, "min_requests": 5, "cumulative_records": 100, "severity": "high"},
+    "sequences": [
+      {
+        "name": "lecture_clients_puis_export",
+        "window_seconds": 120,
+        "severity": "high",
+        "steps": [
+          {"event_type": "acces_donnees", "resource_type": "jeu_donnees", "resource_id": "clients"},
+          {"event_type": "operation", "action": "exporter"}
+        ]
+      }
+    ]
+  },
+  "baseline": {
+    "enabled": true,
+    "min_events": 20,
+    "min_quantity_samples": 5,
+    "z_threshold": 3.0,
+    "min_std": 1.0,
+    "rate_window_seconds": 10,
+    "min_rate_count": 8,
+    "severity_new_resource": "medium",
+    "severity_new_tool": "medium",
+    "severity_quantity": "high",
+    "severity_rate": "medium"
+  }
+}
